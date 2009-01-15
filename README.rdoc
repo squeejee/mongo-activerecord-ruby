@@ -1,0 +1,33 @@
+= Welcome to MongoRecord
+
+MongoRecord is an ActiveRecord-like framework for the 10gen
+Mongo[http://www.mongodb.org/] database.
+
+This document assumes you have read the Mongo documentation.
+
+== Installation
+
+  $ gem sources -a http://gems.github.com
+  $ sudo gem install 10gen-mongorecord
+
+MongoRecord depends on the Mongo Ruby Driver. Installing the MongoRecord gem
+will also install the Mongo Ruby Driver if you don't have it already.
+
+
+== Getting Started
+
+See the examples, read the MongoRecord::Base and MongoRecord::Cursor
+documentation, and look at tests/test_mongo.rb.
+
+=== Persistence
+
+You can use MongoRecord::Base or talk to the database (stored in the $db
+object) directly.
+
+See MongoRecord::Base and MongoRecord::Cursor.
+
+=== Logger
+
+See MongoRecord::LogDevice. When running outside of the cloud (for example,
+during development), all log messages are echoed to $stderr which is normally
+the console.
