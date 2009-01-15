@@ -8,7 +8,7 @@ This document assumes you have read the Mongo documentation.
 == Installation
 
   $ gem sources -a http://gems.github.com
-  $ sudo gem install 10gen-mongorecord
+  $ sudo gem install mongodb-mongo-activerecord-ruby
 
 MongoRecord depends on the Mongo Ruby Driver. Installing the MongoRecord gem
 will also install the Mongo Ruby Driver if you don't have it already.
