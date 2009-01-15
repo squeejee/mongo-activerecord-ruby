@@ -441,7 +441,7 @@ module MongoRecord
       end
 
       def ids_clause(ids)
-        ids.length == 1 ? ids[0].to_oid : {:$in => ids.collect{|id| id.to_oid}}
+        ids.length == 1 ? ids[0].to_oid : {'$in' => ids.collect{|id| id.to_oid}}
       end
 
       # Returns true if all field_names are in @field_names.
@@ -514,9 +514,9 @@ module MongoRecord
         condition.each { |k,v|
           h[k] = case v
                  when Array
-                   {:$in => k == 'id' || k == '_id' ? v.collect{ |val| val.to_oid} : v} # if id, can't pass in string; must be ObjectID
+                   {'$in' => k == 'id' || k == '_id' ? v.collect{ |val| val.to_oid} : v} # if id, can't pass in string; must be ObjectID
                  when Range
-                   {:$gte => v.first, :$lte => v.last}
+                   {'$gte' => v.first, '$lte' => v.last}
                  else
                    k == 'id' || k == '_id' ? v.to_oid : v
                  end
@@ -524,10 +524,11 @@ module MongoRecord
         h
       end
 
-      # Returns a hash useable by Mongo for applying +func+ on the db
-      # server. +func+ must be a JavaScript function in a string.
+      # Returns a hash useable by Mongo for applying +func+ on the db server.
+      # +func+ must be +nil+ or a JavaScript expression or function in a
+      # string.
       def where_func(func)    # :nodoc:
-        func ? {:$where => func} : {}
+        func ? {'$where' => func} : {}
       end
 
       def replace_named_bind_variables(str, h) # :nodoc:
@@ -566,9 +567,7 @@ module MongoRecord
         return nil unless a
         a = [a] unless a.kind_of?(Array)
         return nil unless a.length > 0
-        fields = {}
-        a.each { |k| fields[k.to_s] = 1 }
-        fields
+        a.collect { |k| k.to_s }
       end
 
       def sort_by_from(option) # :nodoc:
