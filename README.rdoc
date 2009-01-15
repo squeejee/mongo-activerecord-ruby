@@ -5,6 +5,30 @@ Mongo[http://www.mongodb.org/] database.
 
 This document assumes you have read the Mongo documentation.
 
+A quick code sample:
+
+  require 'rubygems'
+  require 'mongo'
+  require 'mongo_record'
+
+  class Track < MongoRecord::Base
+    collection_name :tracks
+    fields :artist, :album, :song, :track
+    def to_s
+      "artist: #{artist}, album: #{album}, song: #@song, track: #{@track ? @track.to_i : nil}"
+    end
+  end
+
+  MongoRecord::Base.connection =
+    XGen::Mongo::Driver::Mongo.new.db('mongorecord-test')
+
+  t = Track.new(:artist => 'Level 42', :album => 'Standing In The Light',
+                :song => 'Micro-Kid', :track => 1)
+  t.save
+  puts "There are #{Track.count()} tracks."
+  t = Track.find(:first, :conditions => {:song => 'Micro-Kid'})
+  Track.find(:all, :sort => 'song').each { |t| puts t.to_s }
+
 == Installation
 
   $ gem sources -a http://gems.github.com
