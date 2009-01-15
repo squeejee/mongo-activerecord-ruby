@@ -624,7 +624,6 @@ module MongoRecord
       when Hash
         row.each { |k, val|
           k = '_id' if k == 'id' # Rails helper
-          val = nil if val == '' && k == '_id'
           init_ivar("@#{k}", val)
         }
       else

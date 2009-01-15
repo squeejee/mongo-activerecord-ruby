@@ -179,12 +179,12 @@ class MongoTest < Test::Unit::TestCase
     sorted_track_titles = ['Garden Of Earthly Delights', 'King For A Day', @mayor_song]
 
     # Array
-    list = Track.find(:all, :conditions => {:track => [1,2,3]}).collect
+    list = Track.find(:all, :conditions => {:track => [1,2,3]}).to_a
     assert_equal 3, list.length
     assert_equal sorted_track_titles, list.collect{|t| t.song}.sort
 
     # Range
-    list = Track.find(:all, :conditions => {:track => 1..3}).collect
+    list = Track.find(:all, :conditions => {:track => 1..3}).to_a
     assert_equal 3, list.length
     assert_equal sorted_track_titles, list.collect{|t| t.song}.sort
   end
@@ -450,7 +450,7 @@ class MongoTest < Test::Unit::TestCase
     assert str.include?(@mayor_song)
     assert str.include?('King For A Day')
 
-    list = Track.find(:all, :conditions => "track in (1,2,3)").collect
+    list = Track.find(:all, :conditions => "track in (1,2,3)").to_a
     assert_equal 3, list.length
     assert_equal ['Garden Of Earthly Delights', 'King For A Day', @mayor_song], list.collect{|t| t.song}.sort
   end
