@@ -9,10 +9,21 @@ Gem::Specification.new do |s|
 
   s.require_paths = ['lib']
   
-  s.files = Dir['examples/*.rb'] + Dir['lib/mongo_record/*.rb']
-    ['lib/mongo_record.rb', 'README.rdoc', 'Rakefile',
-     'mongo-activerecord-ruby.gemspec']
-  s.test_files = Dir['tests/*.rb']
+  s.files = ['examples/tracks.rb', 'lib/mongo_record.rb',
+             'lib/mongo_record/base.rb',
+             'lib/mongo_record/convert.rb',
+             'lib/mongo_record/log_device.rb',
+             'lib/mongo_record/sql.rb',
+             'lib/mongo_record/subobject.rb',
+             'README.rdoc', 'Rakefile', 'mongo-activerecord-ruby.gemspec']
+  s.test_files = ['tests/address.rb',
+                  'tests/course.rb',
+                  'tests/student.rb',
+                  'tests/test_log_device.rb',
+                  'tests/test_mongo.rb',
+                  'tests/test_sql.rb',
+                  'tests/track2.rb',
+                  'tests/track3.rb']
   
   s.has_rdoc = true
   s.rdoc_options = ['--main', 'README.rdoc', '--inline-source']
