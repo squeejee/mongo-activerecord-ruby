@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
 
   s.require_paths = ['lib']
   
-  s.files = FileList['examples/**/*.rb', 'lib/**/*.rb', 'README.rdoc',
-                     'Rakefile', 'mongorecord.gemspec'].to_a
-  s.test_files = ['tests/**/*.rb']
+  s.files = Dir['examples/*.rb'] + Dir['lib/mongo_record/*.rb']
+    ['lib/mongo_record.rb', 'README.rdoc', 'Rakefile', 'mongorecord.gemspec']
+  s.test_files = Dir['tests/*.rb']
   
   s.has_rdoc = true
   s.rdoc_options = ['--main', 'README.rdoc', '--inline-source']

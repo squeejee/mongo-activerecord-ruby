@@ -13,6 +13,18 @@ This document assumes you have read the Mongo documentation.
 MongoRecord depends on the Mongo Ruby Driver. Installing the MongoRecord gem
 will also install the Mongo Ruby Driver if you don't have it already.
 
+The source code is available at http://github.com/mongodb/mongo-ruby-driver.
+You can either clone the git repository or download a tarball or zip file.
+Once you have the source, you can use it from wherever you downloaded it or
+you can install it as a gem from the source by typing
+
+  $ gem build mongo-activerecord-ruby.gemspec
+  # ignore "WARNING:  no rubyforge_project specified"
+  $ sudo gem install mongo-activerecord-ruby-X.Y.Z.gem
+
+...where X.Y.Z is the gem version number. Remember that you need the Mongo
+gem, too.
+
 
 == Getting Started
 
