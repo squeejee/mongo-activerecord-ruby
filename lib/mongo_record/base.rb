@@ -408,8 +408,6 @@ module MongoRecord
         find_options[:offset] = options[:offset].to_i if options[:offset]
         find_options[:sort] = sort_by_from(options[:order]) if options[:order]
 
-        p criteria              # DEBUG
-        p find_options          # DEBUG
         cursor = collection.find(criteria, find_options)
 
         # Override cursor.next_object so it returns a new instance of this class
@@ -443,7 +441,6 @@ module MongoRecord
       end
 
       def ids_clause(ids)
-        p ids
         ids.length == 1 ? ids[0].to_oid : {:$in => ids.collect{|id| id.to_oid}}
       end
 
