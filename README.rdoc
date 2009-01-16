@@ -42,12 +42,7 @@ You can either clone the git repository or download a tarball or zip file.
 Once you have the source, you can use it from wherever you downloaded it or
 you can install it as a gem from the source by typing
 
-  $ gem build mongo-activerecord-ruby.gemspec
-  # ignore "WARNING:  no rubyforge_project specified"
-  $ sudo gem install mongo-activerecord-ruby-X.Y.Z.gem
-
-...where X.Y.Z is the gem version number. Remember that you need the Mongo
-gem, too.
+  $ rake gem:install
 
 
 == Getting Started
