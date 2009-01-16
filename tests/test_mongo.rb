@@ -43,6 +43,8 @@ class MongoTest < Test::Unit::TestCase
   def setup
     super
     @db = XGen::Mongo::Driver::Mongo.new.db('mongorecord-test')
+    MongoRecord::Base.connection = @db
+
     @students = @db.collection('students')
     @courses = @db.collection('courses')
     @tracks = @db.collection('tracks')
@@ -63,8 +65,6 @@ class MongoTest < Test::Unit::TestCase
     @mayor_str = "artist: XTC, album: Oranges & Lemons, song: The Mayor Of Simpleton, track: 2"
     @mayor_song = 'The Mayor Of Simpleton'
 
-    MongoRecord::Base.connection = @db
-
     @spongebob_addr = Address.new(:street => "3 Pineapple Lane", :city => "Bikini Bottom", :state => "HI", :postal_code => "12345")
     @bender_addr = Address.new(:street => "Planet Express", :city => "New New York", :state => "NY", :postal_code => "10001")
     @course1 = Course.new(:name => 'Introductory Testing')
@@ -74,7 +74,7 @@ class MongoTest < Test::Unit::TestCase
   end
 
   def teardown
-    @students.clear
+#     @students.clear
     @courses.clear
     @tracks.clear
     super
@@ -205,7 +205,7 @@ class MongoTest < Test::Unit::TestCase
     assert_not_nil(x.id)
     z = Track.find(x.id)
     assert_equal(x.to_s, z.to_s)
-    assert_equal(x._id, z._id)
+    assert_equal(x.id, z.id)
   end
 
   def test_find_or_create_but_already_exists
@@ -376,8 +376,10 @@ class MongoTest < Test::Unit::TestCase
 
   def test_has_many_save_and_find
     s = Student.new(:name => 'Spongebob Squarepants', :email => 'spongebob@example.com', :scores => [@score1, @score2])
-    s.save
+    s.save!
+    assert_not_nil s.id
 
+    assert_equal 1, Student.count()
     s2 = Student.find(:first)
     assert_equal 'Spongebob Squarepants', s2.name
     assert_equal 'spongebob@example.com', s2.email
@@ -407,8 +409,10 @@ class MongoTest < Test::Unit::TestCase
 
   def test_new_record
     t = Track.new
+    assert_nil t.id
     assert t.new_record?
     t.save
+    assert_not_nil t.id
     assert !t.new_record?
 
     t = Track.create(:artist => 'Level 42', :album => 'Standing In The Light', :song => 'Micro-Kid', :track => 1)
@@ -573,10 +577,15 @@ class MongoTest < Test::Unit::TestCase
       MongoRecord::Base.connection = alt_db
       assert_equal alt_db, MongoRecord::Base.connection
 
-      assert_equal 0, alt_db.collection('students').count()
+      # Make sure collection exists
+      coll = alt_db.collection('students')
+      coll.insert('name' => 'foo')
+      coll.clear
+
+      assert_equal 0, coll.count()
       s = Student.new(:name => 'Spongebob Squarepants', :address => @spongebob_addr)
       assert s.save, "save failed"
-      assert_equal 1, alt_db.collection('students').count()
+      assert_equal 1, coll.count()
     ensure
       @db = old_db
       MongoRecord::Base.connection = @db

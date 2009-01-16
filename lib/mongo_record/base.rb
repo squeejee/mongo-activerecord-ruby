@@ -27,13 +27,6 @@ class String
   end
 end
 
-# An ObjectID. The primary key for all objects stored into Mongo through
-# Babble, stored in the _id field.
-#
-# Normally, you don't have to worry about ObjectIDs. You can treat _id values
-# as strings and XGen::Mongo::Base or Babble will covert them for you.
-#
-# The ObjectID class constructor and initialize methods are defined in Java.
 class XGen::Mongo::Driver::ObjectID
   # Convert this object to an ObjectID.
   def to_oid
@@ -42,6 +35,15 @@ class XGen::Mongo::Driver::ObjectID
 end
 
 module MongoRecord
+
+  class PKFactory
+    def create_pk(row)
+      return row if row[:_id]
+      row.delete(:_id)          # in case it is nil
+      row['_id'] ||= XGen::Mongo::Driver::ObjectID.new
+      row
+    end
+  end
 
   class MongoError < StandardError #:nodoc:
   end
@@ -94,6 +96,7 @@ module MongoRecord
       # <code>$db</code> will be used.
       def connection=(val)
         @@connection = val
+        @@connection.pk_factory = PKFactory.new unless @@connection.pk_factory
       end
 
       # This method only exists so that MongoRecord::Base and
@@ -566,8 +569,8 @@ module MongoRecord
       def fields_from(a) # :nodoc:
         return nil unless a
         a = [a] unless a.kind_of?(Array)
-        return nil unless a.length > 0
-        a.collect { |k| k.to_s }
+        a += ['_id']            # always return _id
+        a.uniq.collect { |k| k.to_s }
       end
 
       def sort_by_from(option) # :nodoc:
@@ -701,8 +704,8 @@ module MongoRecord
     # Save self to the database and set the id.
     def create
       set_create_times
-      @_id = XGen::Mongo::Driver::ObjectID.new
-      self.class.collection.insert(to_mongo_value.merge({'_id' => @_id}))
+      with_id = self.class.collection.insert(to_mongo_value)
+      @_id = with_id['_id'] || with_id[:_id]
       self
     end
 
