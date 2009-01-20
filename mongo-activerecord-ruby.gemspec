@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.version = '0.1.0'
   s.platform = Gem::Platform::RUBY
   s.summary = 'ActiveRecord-like models for the 10gen Mongo DB'
-  s.description = 'MongoRecord is an ActiveRecord-like framework for the 10gen Monog database. For more information about Mongo, see http://www.mongodb.org.'
+  s.description = 'MongoRecord is an ActiveRecord-like framework for the 10gen Mongo database. For more information about Mongo, see http://www.mongodb.org.'
   
   s.add_dependency('mongodb-mongo-ruby-driver', ['>= 0.1.3'])
 
