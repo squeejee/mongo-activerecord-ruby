@@ -3,6 +3,10 @@
 MongoRecord is an ActiveRecord-like framework for the 10gen
 Mongo[http://www.mongodb.org/] database.
 
+This library is for use outside of Ruby on Rails. If you want to use Mongo
+with Ruby on Rails, please see the 'activerecord-mongo-adapter' project at
+http://github.com/mongodb/activerecord-mongo-adapter.
+
 This document assumes you have read the Mongo documentation.
 
 A quick code sample:
