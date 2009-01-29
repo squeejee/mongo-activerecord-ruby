@@ -299,6 +299,11 @@ class MongoTest < Test::Unit::TestCase
     assert_equal 3, Track.count(:conditions => {:artist => 'XTC'})
   end
 
+  def test_count_collection_missing
+    @db.drop_collection('tracks')
+    assert_equal 0, Track.count
+  end
+
   def test_select
     str = Track.find(:all, :select => :album).inject('') { |str, t| str + t.to_s }
     assert str.include?("artist: , album: Oranges & Lemons, song: , track:")

@@ -299,7 +299,18 @@ module MongoRecord
       # Returns the number of matching records.
       def count(options={})
         criteria = criteria_from(options[:conditions]).merge!(where_func(options[:where]))
-        collection.count(criteria)
+        begin
+          collection.count(criteria)
+        rescue => ex
+          if ex.to_s =~ /Error with count command.*ns does not exist/
+            # Return 0 because we will graciously assume that we are being
+            # called from a subclass that has been initialized properly, and
+            # is therefore mentioned in the schema.
+            0
+          else
+            raise ex
+          end
+        end
       end
 
       # Deletes the record with the given id from the collection.
