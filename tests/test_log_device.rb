@@ -24,7 +24,9 @@ class LoggerTest < Test::Unit::TestCase
   MAX_RECS = 3
 
   def setup
-    @db = XGen::Mongo::Driver::Mongo.new.db('mongorecord-test')
+    @host = ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost'
+    @port = ENV['MONGO_RUBY_DRIVER_PORT'] || XGen::Mongo::Driver::Mongo::DEFAULT_PORT
+    @db = XGen::Mongo::Driver::Mongo.new(@host, @port).db('mongorecord-test')
     @db.drop_collection('testlogger') # can't remove recs from capped colls
     MongoRecord::LogDevice.connection = @db
     # Create a log device with a max of MAX_RECS records

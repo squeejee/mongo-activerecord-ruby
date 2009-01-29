@@ -14,7 +14,9 @@ class Track < MongoRecord::Base
   end
 end
 
-MongoRecord::Base.connection = XGen::Mongo::Driver::Mongo.new.db('mongorecord-test')
+host = ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost'
+port = ENV['MONGO_RUBY_DRIVER_PORT'] || XGen::Mongo::Driver::Mongo::DEFAULT_PORT
+MongoRecord::Base.connection = XGen::Mongo::Driver::Mongo.new(host,port).db('mongorecord-test')
 
 # Create data
 
