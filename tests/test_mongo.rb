@@ -40,29 +40,28 @@ end
 
 class MongoTest < Test::Unit::TestCase
 
+  @@db = XGen::Mongo::Driver::Mongo.new(ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost',
+                                        ENV['MONGO_RUBY_DRIVER_PORT'] || XGen::Mongo::Driver::Mongo::DEFAULT_PORT).db('mongorecord-test')
+  @@students = @@db.collection('students')
+  @@courses = @@db.collection('courses')
+  @@tracks = @@db.collection('tracks')
+
   def setup
     super
-    @host = ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost'
-    @port = ENV['MONGO_RUBY_DRIVER_PORT'] || XGen::Mongo::Driver::Mongo::DEFAULT_PORT
-    @db = XGen::Mongo::Driver::Mongo.new(@host, @port).db('mongorecord-test')
-    MongoRecord::Base.connection = @db
+    MongoRecord::Base.connection = @@db
 
-    @students = @db.collection('students')
-    @courses = @db.collection('courses')
-    @tracks = @db.collection('tracks')
-
-    @students.clear
-    @courses.clear
-    @tracks.clear
+    @@students.clear
+    @@courses.clear
+    @@tracks.clear
 
     # Manually insert data without using MongoRecord::Base
-    @tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'Thomas Dolby', :album => 'Aliens Ate My Buick', :song => 'The Ability to Swing'})
-    @tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'Thomas Dolby', :album => 'Aliens Ate My Buick', :song => 'Budapest by Blimp'})
-    @tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'Thomas Dolby', :album => 'The Golden Age of Wireless', :song => 'Europa and the Pirate Twins'})
-    @tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'XTC', :album => 'Oranges & Lemons', :song => 'Garden Of Earthly Delights', :track => 1})
+    @@tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'Thomas Dolby', :album => 'Aliens Ate My Buick', :song => 'The Ability to Swing'})
+    @@tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'Thomas Dolby', :album => 'Aliens Ate My Buick', :song => 'Budapest by Blimp'})
+    @@tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'Thomas Dolby', :album => 'The Golden Age of Wireless', :song => 'Europa and the Pirate Twins'})
+    @@tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'XTC', :album => 'Oranges & Lemons', :song => 'Garden Of Earthly Delights', :track => 1})
     @mayor_id = XGen::Mongo::Driver::ObjectID.new
-    @tracks.insert({:_id => @mayor_id, :artist => 'XTC', :album => 'Oranges & Lemons', :song => 'The Mayor Of Simpleton', :track => 2})
-    @tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'XTC', :album => 'Oranges & Lemons', :song => 'King For A Day', :track => 3})
+    @@tracks.insert({:_id => @mayor_id, :artist => 'XTC', :album => 'Oranges & Lemons', :song => 'The Mayor Of Simpleton', :track => 2})
+    @@tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'XTC', :album => 'Oranges & Lemons', :song => 'King For A Day', :track => 3})
 
     @mayor_str = "artist: XTC, album: Oranges & Lemons, song: The Mayor Of Simpleton, track: 2"
     @mayor_song = 'The Mayor Of Simpleton'
@@ -76,9 +75,9 @@ class MongoTest < Test::Unit::TestCase
   end
 
   def teardown
-#     @students.clear
-    @courses.clear
-    @tracks.clear
+    @@students.clear
+    @@courses.clear
+    @@tracks.clear
     super
   end
 
@@ -302,7 +301,7 @@ class MongoTest < Test::Unit::TestCase
   end
 
   def test_count_collection_missing
-    @db.drop_collection('tracks')
+    @@db.drop_collection('tracks')
     assert_equal 0, Track.count
   end
 
@@ -575,12 +574,12 @@ class MongoTest < Test::Unit::TestCase
 
   def test_alternate_connection
     old_db = MongoRecord::Base.connection
-    assert_equal @db, old_db
+    assert_equal @@db, old_db
     alt_db = XGen::Mongo::Driver::Mongo.new.db('mongorecord-test-alt-conn')
     assert_not_equal old_db, alt_db
     alt_db.drop_collection('students')
     begin
-      @db = nil
+      @@db = nil
       MongoRecord::Base.connection = alt_db
       assert_equal alt_db, MongoRecord::Base.connection
 
@@ -594,8 +593,8 @@ class MongoTest < Test::Unit::TestCase
       assert s.save, "save failed"
       assert_equal 1, coll.count()
     ensure
-      @db = old_db
-      MongoRecord::Base.connection = @db
+      @@db = old_db
+      MongoRecord::Base.connection = @@db
       alt_db.drop_collection('students')
     end
   end

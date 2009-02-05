@@ -23,25 +23,25 @@ class LoggerTest < Test::Unit::TestCase
 
   MAX_RECS = 3
 
+  @@db = XGen::Mongo::Driver::Mongo.new(ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost',
+                                        ENV['MONGO_RUBY_DRIVER_PORT'] || XGen::Mongo::Driver::Mongo::DEFAULT_PORT).db('mongorecord-test')
+
   def setup
-    @host = ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost'
-    @port = ENV['MONGO_RUBY_DRIVER_PORT'] || XGen::Mongo::Driver::Mongo::DEFAULT_PORT
-    @db = XGen::Mongo::Driver::Mongo.new(@host, @port).db('mongorecord-test')
-    @db.drop_collection('testlogger') # can't remove recs from capped colls
-    MongoRecord::LogDevice.connection = @db
+    @@db.drop_collection('testlogger') # can't remove recs from capped colls
+    MongoRecord::LogDevice.connection = @@db
     # Create a log device with a max of MAX_RECS records
     @logger = Logger.new(MongoRecord::LogDevice.new('testlogger', :size => 1_000_000, :max => MAX_RECS))
   end
 
   def teardown
-    @db.drop_collection('testlogger') # can't remove recs from capped colls
+    @@db.drop_collection('testlogger') # can't remove recs from capped colls
   end
 
   # We really don't have to test much more than this. We can trust that Mongo
   # works properly.
   def test_max
-    assert_not_nil @db
-    assert_equal @db.name, MongoRecord::LogDevice.connection.name
+    assert_not_nil @@db
+    assert_equal @@db.name, MongoRecord::LogDevice.connection.name
     collection = MongoRecord::LogDevice.connection.collection('testlogger')
     MAX_RECS.times { |i|
       @logger.debug("test message #{i+1}")
@@ -55,10 +55,10 @@ class LoggerTest < Test::Unit::TestCase
   end
 
   def test_alternate_connection
-    old_db = @db
+    old_db = @@db
     alt_db = XGen::Mongo::Driver::Mongo.new.db('mongorecord-test-log-device')
     begin
-      @db = nil
+      @@db = nil
       MongoRecord::LogDevice.connection = alt_db
 
       logger = Logger.new(MongoRecord::LogDevice.new('testlogger', :size => 1_000_000, :max => MAX_RECS))
@@ -72,8 +72,8 @@ class LoggerTest < Test::Unit::TestCase
     rescue => ex
       fail ex.to_s
     ensure
-      @db = old_db
-      MongoRecord::LogDevice.connection = @db
+      @@db = old_db
+      MongoRecord::LogDevice.connection = @@db
       alt_db.drop_collection('testlogger')
     end
   end
