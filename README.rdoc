@@ -38,8 +38,9 @@ A quick code sample:
   $ gem sources -a http://gems.github.com
   $ sudo gem install mongodb-mongo-activerecord-ruby
 
-MongoRecord depends on the Mongo Ruby Driver. Installing the MongoRecord gem
-will also install the Mongo Ruby Driver if you don't have it already.
+MongoRecord depends on the Mongo Ruby Driver, version 0.5.4 or higher.
+Installing the MongoRecord gem will also install the Mongo Ruby Driver if you
+don't have it already.
 
 The source code is available at http://github.com/mongodb/mongo-ruby-driver.
 You can either clone the git repository or download a tarball or zip file.

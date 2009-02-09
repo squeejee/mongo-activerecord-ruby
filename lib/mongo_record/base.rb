@@ -409,7 +409,7 @@ module MongoRecord
       def find_initial(options)
         criteria = criteria_from(options[:conditions]).merge!(where_func(options[:where]))
         fields = fields_from(options[:select])
-        row = collection.find(criteria, :fields => fields, :limit => 1).next_object
+        row = collection.find_first(criteria, :fields => fields, :limit => 1)
         (row.nil? || row['_id'] == nil) ? nil : self.new(row)
       end
 
@@ -438,7 +438,7 @@ module MongoRecord
         fields = fields_from(options[:select])
 
         if ids.length == 1
-          row = collection.find(criteria, :fields => fields, :limit => 1).next_object
+          row = collection.find_first(criteria, :fields => fields, :limit => 1)
           raise RecordNotFound, "Couldn't find #{name} with ID=#{ids[0]} #{criteria.inspect}" if row == nil || row.empty?
           self.new(row)
         else
