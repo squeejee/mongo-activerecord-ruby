@@ -16,6 +16,7 @@
 
 require 'rubygems'
 require 'mongo/types/objectid'
+require 'mongo/types/code'
 require 'mongo/cursor'
 require 'mongo_record/convert'
 require 'mongo_record/sql'
@@ -542,7 +543,7 @@ module MongoRecord
       # +func+ must be +nil+ or a JavaScript expression or function in a
       # string.
       def where_func(func)    # :nodoc:
-        func ? {'$where' => func} : {}
+        func ? {'$where' => XGen::Mongo::Driver::Code.new(func)} : {}
       end
 
       def replace_named_bind_variables(str, h) # :nodoc:
