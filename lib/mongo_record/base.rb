@@ -725,10 +725,7 @@ module MongoRecord
     # +self+ if all is well.
     def update
       set_update_times
-      row = self.class.collection.insert(to_mongo_value)
-      if row['_id'].to_s != @_id.to_s
-        return false
-      end
+      row = self.class.collection.replace(self.class.find(self._id).instance_values, self.instance_values)
       self
     end
 
@@ -748,6 +745,24 @@ module MongoRecord
       freeze
     end
 
+    def [](attr_name)
+      self.send(attr_name)
+    end
+    
+    def []=(attr_name, value)
+      self.class.field(attr_name)
+      self.send(attr_name.to_s + '=', value)
+    end
+    
+    def method_missing(sym, *args)
+      if self.instance_variables.include?("@#{sym}")
+        self.class.field(sym)
+        return self.send(sym)
+      else
+        super
+      end
+    end
+   
     #--
     # ================================================================
     # These methods exist so we can plug in ActiveRecord validation, etc.

@@ -135,12 +135,15 @@ class MongoTest < Test::Unit::TestCase
   end
 
   def test_update
+    track_count = Track.count
     t = Track.find_by_track(2)
     t.track = 99
     t.save
     str = @mayor_str.sub(/2/, '99')
     assert_equal(str, t.to_s)
     assert_equal(str, Track.find_by_track(99).to_s)
+    #Added this to be sure that we are updating the record versus creating a new one
+    assert_equal(track_count, Track.count)
   end
 
   def test_find_all
