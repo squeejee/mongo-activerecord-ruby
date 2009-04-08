@@ -702,14 +702,15 @@ module MongoRecord
 
     # Return true if this object is new---that is, does not yet have an id.
     def new_record?
-      @_id == nil
+      self.id == nil
     end
 
     # Convert this object to a Mongo value suitable for saving to the
     # database.
     def to_mongo_value
       h = {}
-      self.class.mongo_ivar_names.each {|iv| h[iv] = instance_variable_get("@#{iv}").to_mongo_value }
+#      self.class.mongo_ivar_names.each {|iv| h[iv] = instance_variable_get("@#{iv}").to_mongo_value }
+      self.instance_values.keys.each {|iv| h[iv] = instance_variable_get("@#{iv}").to_mongo_value }
       h
     end
 
@@ -725,7 +726,7 @@ module MongoRecord
     # +self+ if all is well.
     def update
       set_update_times
-      row = self.class.collection.replace(self.class.find(self._id).instance_values, self.instance_values)
+      row = self.class.collection.replace({:_id => self._id}, self.to_mongo_value)
       self
     end
 
