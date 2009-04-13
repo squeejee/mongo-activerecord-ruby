@@ -19,6 +19,7 @@ require 'mongo_record'
 require File.join(File.dirname(__FILE__), 'course')
 require File.join(File.dirname(__FILE__), 'address')
 require File.join(File.dirname(__FILE__), 'student')
+require File.join(File.dirname(__FILE__), 'class_in_module')
 
 class Track < MongoRecord::Base
   collection_name :tracks
@@ -399,6 +400,16 @@ class MongoTest < Test::Unit::TestCase
     assert_not_nil score
     assert_kind_of Score, score
     assert (score.for_course.name == @score1.for_course.name && score.grade == @score1.grade), "oops: first score is wrong: #{score}"
+  end
+
+  def test_has_many_class_in_module
+    a1 = MyMod::A.new(:something => 4)
+    a2 = MyMod::A.new(:something => 10)
+    b = B.new(:a => [a1, a2])
+    assert_not_nil b.a
+    assert_equal 2, b.a.length
+    assert_equal a1, b.a[0]
+    assert_equal a2, b.a[1]
   end
 
   def test_field_query_methods

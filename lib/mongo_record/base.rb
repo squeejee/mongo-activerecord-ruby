@@ -176,7 +176,7 @@ module MongoRecord
                           val != nil && (!val.kind_of?(String) || val != '')
                         })
           klass_name = options[:class_name] || field_name_to_class_name(name)
-          @subobjects[name] = Kernel.const_get(klass_name)
+          @subobjects[name] = eval(klass_name)
         end
       end
 
@@ -193,7 +193,7 @@ module MongoRecord
           define_method("#{name}=".to_sym, lambda { |val| instance_variable_set(ivar_name, val) })
           define_method("#{name}?".to_sym, lambda { !instance_variable_get(ivar_name).empty? })
           klass_name = options[:class_name] || field_name_to_class_name(name)
-          @arrays[name] = Kernel.const_get(klass_name)
+          @arrays[name] = eval(klass_name)
         end
       end
 
