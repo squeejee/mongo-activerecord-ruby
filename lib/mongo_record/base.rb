@@ -725,8 +725,8 @@ module MongoRecord
     # +self+ if all is well.
     def update
       set_update_times
-      row = self.class.collection.insert(to_mongo_value)
-      if row['_id'].to_s != @_id.to_s
+      self.class.collection.modify({:_id => @_id}, to_mongo_value)
+      if self.class.collection.db.error?
         return false
       end
       self
