@@ -286,9 +286,22 @@ module MongoRecord
           find_initial(options)
         when :all
           find_every(options)
+        when :last
+          find_last(options)
         else
           find_from_ids(args, options)
         end
+      end
+      
+      def first(*args)
+#        args = ([:first]<<args).flatten
+        options = extract_options_from_args!(args)
+        find_initial(options)
+      end
+
+      def last(*args)
+        options = extract_options_from_args!(args)
+        find_last(options)
       end
 
       # Returns all records matching mql. Not yet implemented.
@@ -407,11 +420,25 @@ module MongoRecord
         args.last.is_a?(Hash) ? args.pop : {}
       end
 
+      # def find_initial(options)
+      #   criteria = criteria_from(options[:conditions]).merge!(where_func(options[:where]))
+      #   fields = fields_from(options[:select])
+      #   row = collection.find_first(criteria, :fields => fields)
+      #   (row.nil? || row['_id'] == nil) ? nil : self.new(row)
+      # end
+      
       def find_initial(options)
-        criteria = criteria_from(options[:conditions]).merge!(where_func(options[:where]))
-        fields = fields_from(options[:select])
-        row = collection.find_first(criteria, :fields => fields)
-        (row.nil? || row['_id'] == nil) ? nil : self.new(row)
+        options[:limit] = 1
+        options[:order] = 'created_at asc'
+        row = find_every(options)
+        row.to_a[0]
+      end
+
+      def find_last(options)
+        options[:limit] = 1
+        options[:order] = 'created_at desc'
+        row = find_every(options)
+        row.to_a[0]
       end
 
       def find_every(options)
@@ -716,16 +743,17 @@ module MongoRecord
 
     # Save self to the database and set the id.
     def create
-      set_create_times
       with_id = self.class.collection.insert(to_mongo_value)
       @_id = with_id['_id'] || with_id[:_id]
+      create_date = self.instance_variable_defined?("@created_at") ? self.created_at : nil
+      set_create_times(create_date)
       self
     end
 
     # Save self to the database. Return +false+ if there was an error,
     # +self+ if all is well.
     def update
-      set_update_times
+      #set_update_times
       row = self.class.collection.replace({:_id => self._id}, self.to_mongo_value)
       self
     end
@@ -784,8 +812,9 @@ module MongoRecord
     # record. If the object is invalid, the saving will fail and false will
     # be returned.
     def update_attributes(attributes)
-      self.attributes = attributes
-      save
+      attributes.each do |name, value|
+        update_attribute(name, value) if self.instance_variables.include?("@#{name}")
+      end
     end
 
     # Updates an object just like Base.update_attributes but calls save!
@@ -799,6 +828,23 @@ module MongoRecord
     def attributes_from_column_definition; end
 
     # ================================================================
+
+    def set_create_times(t=nil)
+      t ||= Time.now
+      self.class.field_names.each { |iv|
+        case iv
+        when :created_at
+          instance_variable_set("@#{iv}", t.to_time)
+        when :created_on
+          instance_variable_set("@#{iv}", Time.local(t.to_date.year, t.to_date.month, t.to_date.day))
+        end
+      }
+      self.save
+      self.class.subobjects.keys.each { |iv|
+        val = instance_variable_get("@#{iv}")
+        val.send(:set_create_times, t) if val
+      }
+    end
 
     private
 
@@ -819,22 +865,6 @@ module MongoRecord
       else
         instance_variable_set(ivar_name, val)
       end
-    end
-
-    def set_create_times(t=nil)
-      t ||= Time.now
-      self.class.field_names.each { |iv|
-        case iv
-        when :created_at
-          instance_variable_set("@#{iv}", t)
-        when :created_on
-          instance_variable_set("@#{iv}", Time.local(t.year, t.month, t.day))
-        end
-      }
-      self.class.subobjects.keys.each { |iv|
-        val = instance_variable_get("@#{iv}")
-        val.send(:set_create_times, t) if val
-      }
     end
 
     def set_update_times(t=nil)
