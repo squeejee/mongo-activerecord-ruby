@@ -483,6 +483,8 @@ module MongoRecord
           find_options = {}
           find_options[:fields] = fields if fields
           find_options[:sort] = sort_by_from(options[:order]) if options[:order]
+          find_options[:limit] = options[:limit].to_i if options[:limit]
+          find_options[:offset] = options[:offset].to_i if options[:offset]
 
           cursor = collection.find(criteria, find_options)
 
