@@ -292,7 +292,12 @@ module MongoRecord
           find_from_ids(args, options)
         end
       end
-      
+  
+      def all(*args)
+        options = extract_options_from_args!(args)
+        find_every(options)
+      end
+          
       def first(*args)
 #        args = ([:first]<<args).flatten
         options = extract_options_from_args!(args)
@@ -327,6 +332,11 @@ module MongoRecord
         end
       end
 
+      def sum(column)
+        x = self.find(:all, :select=>column)   
+        x.map {|p1| p1.followers_count}.compact.sum
+      end
+      
       # Deletes the record with the given id from the collection.
       def delete(id)
         collection.remove({:_id => id})
@@ -743,6 +753,7 @@ module MongoRecord
 
     # Save self to the database and set the id.
     def create
+      Rails.logger.debug "MongoDB Insert into " + self.class.to_s
       with_id = self.class.collection.insert(to_mongo_value)
       @_id = with_id['_id'] || with_id[:_id]
       create_date = self.instance_variable_defined?("@created_at") ? self.created_at : nil
@@ -754,6 +765,7 @@ module MongoRecord
     # +self+ if all is well.
     def update
       #set_update_times
+      Rails.logger.debug "MongoDB Update " + self.class.to_s
       row = self.class.collection.replace({:_id => self._id}, self.to_mongo_value)
       self
     end
