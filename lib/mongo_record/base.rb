@@ -248,6 +248,12 @@ module MongoRecord
       # This expression is run by the database server against each record
       # found after the :conditions are run.
       #
+      # This expression is run by the database server against each record
+      # found after the :conditions are run.
+      #
+      # <code>:criteria</code> - A hash field to pass in MongoDB conditional operators
+      # in a hash format.  [$gt, $lt, $gte, $lte, $in, ect.]
+      #
       # Examples for find by id:
       #   Person.find("48e5307114f4abdf00dfeb86")     # returns the object for this ID
       #   Person.find(["a_hex_id", "another_hex_id"]) # returns a Cursor over these two objects
@@ -272,6 +278,7 @@ module MongoRecord
       #
       # Mongo-specific example:
       #   Person.find(:all, :where => "this.address.city == 'New York' || this.age = 42")
+      #   Person.find(:all, :criteria => {"followers_count"=>{"$gte"=>410}})
       #
       # As a side note, the :order, :limit, and :offset options are passed
       # on to the Cursor (after the :order option is rewritten to be a
@@ -279,7 +286,11 @@ module MongoRecord
       #   Person.find(:all, :offset => 10, :limit => 10, :order => :created_on)
       # is the same as
       #   Person.find(:all).skip(10).limit(10).sort({:created_on => 1})
+      #
+      # Pa
+    
       def find(*args)
+        
         options = extract_options_from_args!(args)
         case args.first
         when :first
@@ -317,7 +328,7 @@ module MongoRecord
 
       # Returns the number of matching records.
       def count(options={})
-        criteria = criteria_from(options[:conditions]).merge!(where_func(options[:where]))
+        criteria = criteria_from(options[:conditions],options[:criteria]).merge!(where_func(options[:where]))
         begin
           collection.count(criteria)
         rescue => ex
@@ -452,13 +463,17 @@ module MongoRecord
       end
 
       def find_every(options)
-        criteria = criteria_from(options[:conditions]).merge!(where_func(options[:where]))
-
+        options.symbolize_keys!
+        criteria = criteria_from(options[:conditions], options[:criteria]).merge!(where_func(options[:where]))
+        
+        Rails.logger.debug criteria
+        
         find_options = {}
         find_options[:fields] = fields_from(options[:select]) if options[:select]
         find_options[:limit] = options[:limit].to_i if options[:limit]
         find_options[:offset] = options[:offset].to_i if options[:offset]
         find_options[:sort] = sort_by_from(options[:order]) if options[:order]
+
 
         cursor = collection.find(criteria, find_options)
 
@@ -471,7 +486,8 @@ module MongoRecord
         ids = ids.to_a.flatten.compact.uniq
         raise RecordNotFound, "Couldn't find #{name} without an ID" unless ids.length > 0
 
-        criteria = criteria_from(options[:conditions]).merge!(where_func(options[:where]))
+        criteria = criteria_from(options[:conditions], options[:criteria]).merge!(where_func(options[:where]))
+        criteria.merge!(options[:criteria]) unless options[:criteria].blank?
         criteria[:_id] = ids_clause(ids)
         fields = fields_from(options[:select])
 
@@ -529,17 +545,18 @@ module MongoRecord
       #   ["name='%s' and group_id='%s'", "foo'bar", 4]  returns  {:name => 'foo''bar', :group_id => 4}
       #   "name='foo''bar' and group_id='4'" returns {:name => 'foo''bar', :group_id => 4}
       #   { :name => "foo'bar", :group_id => 4 }  returns the hash, modified for Mongo
-      def criteria_from(condition) # :nodoc:
+      def criteria_from(condition, criteria={}) # :nodoc:
         case condition
         when Array
-          criteria_from_array(condition)
+          opts = criteria_from_array(condition)
         when String
-          criteria_from_string(condition)
+          opts = criteria_from_string(condition)
         when Hash
-          criteria_from_hash(condition)
+          opts = criteria_from_hash(condition)
         else
-          {}
-        end
+          opts = {}
+        end        
+        opts.merge!(criteria)
       end
 
       # Substitutes values at the end of an array into the string at its
