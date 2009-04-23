@@ -291,7 +291,8 @@ module MongoRecord
     
       def find(*args)
         
-        options = extract_options_from_args!(args)
+        options = extract_options_from_args!(args)        
+        options.symbolize_keys!
         case args.first
         when :first
           find_initial(options)
@@ -556,6 +557,8 @@ module MongoRecord
         else
           opts = {}
         end        
+        opts ||= {}
+        criteria ||= {}
         opts.merge!(criteria)
       end
 
