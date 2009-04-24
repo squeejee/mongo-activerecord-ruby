@@ -176,7 +176,7 @@ module MongoRecord
                           val != nil && (!val.kind_of?(String) || val != '')
                         })
           klass_name = options[:class_name] || field_name_to_class_name(name)
-          @subobjects[name] = Kernel.const_get(klass_name)
+          @subobjects[name] = eval(klass_name)
         end
       end
 
@@ -193,7 +193,7 @@ module MongoRecord
           define_method("#{name}=".to_sym, lambda { |val| instance_variable_set(ivar_name, val) })
           define_method("#{name}?".to_sym, lambda { !instance_variable_get(ivar_name).empty? })
           klass_name = options[:class_name] || field_name_to_class_name(name)
-          @arrays[name] = Kernel.const_get(klass_name)
+          @arrays[name] = eval(klass_name)
         end
       end
 
@@ -606,11 +606,11 @@ module MongoRecord
         condition.each { |k,v|
           h[k] = case v
                  when Array
-                   {'$in' => k == 'id' || k == '_id' ? v.collect{ |val| val.to_oid} : v} # if id, can't pass in string; must be ObjectID
+                   {'$in' => v}
                  when Range
                    {'$gte' => v.first, '$lte' => v.last}
                  else
-                   k == 'id' || k == '_id' ? v.to_oid : v
+                   v
                  end
         }
         h
@@ -804,9 +804,12 @@ module MongoRecord
     # Save self to the database. Return +false+ if there was an error,
     # +self+ if all is well.
     def update
-      #set_update_times
-      Rails.logger.debug "MongoDB Update " + self.class.to_s
-      row = self.class.collection.replace({:_id => self._id}, self.to_mongo_value)
+      set_update_times
+      self.class.collection.modify({:_id => @_id}, to_mongo_value)
+      Rails.logger.debug "MongoDB Update " + self.class.to_s + " #{@_id}: #{to_mongo_value}"
+      if self.class.collection.db.error?
+        return false
+      end
       self
     end
 
