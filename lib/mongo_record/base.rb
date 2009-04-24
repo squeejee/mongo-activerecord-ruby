@@ -24,7 +24,7 @@ require 'mongo_record/sql'
 class String
   # Convert this String to an ObjectID.
   def to_oid
-    XGen::Mongo::Driver::ObjectID.from_string(self)
+    XGen::Mongo::Driver::ObjectID.legal?(self) ? XGen::Mongo::Driver::ObjectID.from_string(self) : self
   end
 end
 
@@ -527,7 +527,13 @@ module MongoRecord
       end
 
       def ids_clause(ids)
-        ids.length == 1 ? ids[0].to_oid : {'$in' => ids.collect{|id| id.to_oid}}
+        #ids.length == 1 ? ids[0].to_oid : {'$in' => ids.collect{|id| id.to_oid}}
+        
+        if ids.length == 1 
+          ids[0].is_a?(String) ? ids[0].to_oid : ids[0]
+        else 
+          {'$in' => ids.collect{|id| id.is_a?(String) ? id.to_oid : id}}
+        end
       end
 
       # Returns true if all field_names are in @field_names.
@@ -765,7 +771,7 @@ module MongoRecord
 
     # Save self and returns true if the save was successful, false if not.
     def save
-      create_or_update
+      create_or_update      
     end
 
     # Save self and returns true if the save was successful and raises
@@ -776,7 +782,7 @@ module MongoRecord
 
     # Return true if this object is new---that is, does not yet have an id.
     def new_record?
-      self.id == nil
+      @_id.nil? || self.class.collection.find_first("_id" => @_id).nil?
     end
 
     # Convert this object to a Mongo value suitable for saving to the
@@ -784,7 +790,13 @@ module MongoRecord
     def to_mongo_value
       h = {}
 #      self.class.mongo_ivar_names.each {|iv| h[iv] = instance_variable_get("@#{iv}").to_mongo_value }
-      self.instance_values.keys.each {|iv| h[iv] = instance_variable_get("@#{iv}").to_mongo_value }
+      mongo_values = self.instance_values
+      # If the "_id" value is not set but an "id" value is, set "_id" equal to "id"
+      if mongo_values["_id"].nil? && !mongo_values["id"].nil?
+        mongo_values["_id"] = mongo_values["id"]
+      end
+      key_names = mongo_values.keys + self.class.subobjects.keys + self.class.arrays.keys
+      key_names.each {|key| h[key] = instance_variable_get("@#{key}").to_mongo_value }
       h
     end
 
@@ -794,7 +806,7 @@ module MongoRecord
       set_create_times(create_date)
       with_id = self.class.collection.insert(to_mongo_value)
       @_id = with_id['_id'] || with_id[:_id]
-      self
+      with_id
     end
 
     # Save self to the database. Return +false+ if there was an error,

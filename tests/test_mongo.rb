@@ -23,7 +23,7 @@ require File.join(File.dirname(__FILE__), 'class_in_module')
 
 class Track < MongoRecord::Base
   collection_name :tracks
-  fields :artist, :album, :song, :track
+  fields :artist, :album, :song, :track, :created_at
   def to_s
     # Uses both accessor methods and ivars themselves
     "artist: #{artist}, album: #{album}, song: #@song, track: #{@track ? @track.to_i : nil}"
@@ -214,6 +214,7 @@ class MongoTest < Test::Unit::TestCase
     x = Track.new(:artist => 'Level 42', :album => 'Standing In The Light', :song => 'Micro-Kid', :track => 1)
     assert_nil(x.id)
     assert x.save, "x.save returned false; expected true"
+    x = Track.last
     assert_not_nil(x.id)
     z = Track.find(x.id)
     assert_equal(x.to_s, z.to_s)
@@ -240,16 +241,16 @@ class MongoTest < Test::Unit::TestCase
 
   def test_raise_error_if_bogus_id
     Track.find("bogus_id")
-    fail 'expected "invalid ObjectID" exception'
+    fail 'expected "find Track with ID=bogus_id" exception'
   rescue => ex
-    assert_match /illegal ObjectID format/, ex.to_s
+    assert_match /find Track with ID=bogus_id/, ex.to_s
   end
 
   def test_raise_error_if_first_and_bogus_id_in_hash
     Track.find(:first, :conditions => {:_id => "bogus_id"})
-    fail 'expected "invalid ObjectID" exception'
+    fail 'expected "find Track with ID=bogus_id" exception'
   rescue => ex
-    assert_match /invalid ObjectID/, ex.to_s
+    assert_match /find Track with ID=bogus_id/, ex.to_s
   end
 
   def test_find_options
