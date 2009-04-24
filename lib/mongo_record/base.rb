@@ -289,8 +289,7 @@ module MongoRecord
       #
       
     
-      def find(*args)
-        
+      def find(*args)        
         options = extract_options_from_args!(args)        
         options.symbolize_keys!
         case args.first
@@ -484,9 +483,7 @@ module MongoRecord
       def find_every(options)
         options.symbolize_keys!
         criteria = criteria_from(options[:conditions], options[:criteria]).merge!(where_func(options[:where]))
-        
-        Rails.logger.debug criteria
-        
+                
         find_options = {}
         find_options[:fields] = fields_from(options[:select]) if options[:select]
         find_options[:limit] = options[:limit].to_i if options[:limit]
@@ -506,7 +503,7 @@ module MongoRecord
         raise RecordNotFound, "Couldn't find #{name} without an ID" unless ids.length > 0
 
         criteria = criteria_from(options[:conditions], options[:criteria]).merge!(where_func(options[:where]))
-        criteria.merge!(options[:criteria]) unless options[:criteria].blank?
+        criteria.merge!(options[:criteria]) unless options[:criteria].nil?
         criteria[:_id] = ids_clause(ids)
         fields = fields_from(options[:select])
 
@@ -793,7 +790,6 @@ module MongoRecord
 
     # Save self to the database and set the id.
     def create
-      Rails.logger.debug "MongoDB Insert into " + self.class.to_s
       with_id = self.class.collection.insert(to_mongo_value)
       @_id = with_id['_id'] || with_id[:_id]
       create_date = self.instance_variable_defined?("@created_at") ? self.created_at : nil
@@ -806,7 +802,6 @@ module MongoRecord
     def update
       set_update_times
       self.class.collection.modify({:_id => @_id}, to_mongo_value)
-      Rails.logger.debug "MongoDB Update " + self.class.to_s + " #{@_id}: #{to_mongo_value}"
       if self.class.collection.db.error?
         return false
       end
@@ -889,12 +884,11 @@ module MongoRecord
       self.class.field_names.each { |iv|
         case iv
         when :created_at
-          instance_variable_set("@#{iv}", t.to_time)
-        when :created_on
-          instance_variable_set("@#{iv}", Time.local(t.to_date.year, t.to_date.month, t.to_date.day))
+          instance_variable_set("@#{iv}", t)
+        when :created_on          
+          instance_variable_set("@#{iv}", Time.local(t.year, t.month, t.day))
         end
       }
-      self.save
       self.class.subobjects.keys.each { |iv|
         val = instance_variable_get("@#{iv}")
         val.send(:set_create_times, t) if val

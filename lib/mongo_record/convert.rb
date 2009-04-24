@@ -24,6 +24,15 @@ class Object
   def to_mongo_value
     self
   end
+  
+  # From Rails
+  def instance_values #:nodoc:
+    instance_variables.inject({}) do |values, name|
+      values[name.to_s[1..-1]] = instance_variable_get(name)
+      values
+    end
+  end
+  
 end
 
 class Array
@@ -41,5 +50,17 @@ class Hash
     h = {}
     self.each {|k,v| h[k] = v.to_mongo_value}
     h
+  end
+
+  # Same symbolize_keys method used in Rails
+  def symbolize_keys
+    inject({}) do |options, (key, value)|
+      options[(key.to_sym rescue key) || key] = value
+      options
+    end
+  end
+  
+  def symbolize_keys!
+    self.replace(self.symbolize_keys)
   end
 end
