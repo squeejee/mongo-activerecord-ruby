@@ -529,11 +529,11 @@ module MongoRecord
         condition.each { |k,v|
           h[k] = case v
                  when Array
-                   {'$in' => k == 'id' || k == '_id' ? v.collect{ |val| val.to_oid} : v} # if id, can't pass in string; must be ObjectID
+                   {'$in' => v}
                  when Range
                    {'$gte' => v.first, '$lte' => v.last}
                  else
-                   k == 'id' || k == '_id' ? v.to_oid : v
+                   v
                  end
         }
         h

@@ -131,6 +131,13 @@ class MongoTest < Test::Unit::TestCase
     assert_equal(@mayor_str, Track.find_by_id(@mayor_id).to_s)
   end
 
+  def test_find_by_custom_id
+    @@tracks.insert({:_id => 25, :artist => 'Mike D', :album => 'Awesome Blossom', :song => 'Hello World', :track => 5})
+    assert_equal("artist: Mike D, album: Awesome Blossom, song: Hello World, track: 5",
+                 Track.find_by_id(25).to_s)
+
+  end
+
   def test_find_by_song
     assert_equal("artist: Thomas Dolby, album: Aliens Ate My Buick, song: Budapest by Blimp, track: ", Track.find_by_song('Budapest by Blimp').to_s)
   end
