@@ -817,7 +817,7 @@ module MongoRecord
       if self.class.collection.db.error?
         return false
       end
-      self
+      self      
     end
 
     # Remove self from the database and set @_id to nil. If self has no
@@ -893,14 +893,9 @@ module MongoRecord
 
     def set_create_times(t=nil)
       t ||= Time.now
-      self.class.field_names.each { |iv|
-        case iv
-        when :created_at
-          instance_variable_set("@#{iv}", t)
-        when :created_on          
-          instance_variable_set("@#{iv}", Time.local(t.year, t.month, t.day))
-        end
-      }
+      t = Time.parse(t) if t.is_a?(String)
+      self["created_at"] = t
+      self["created_on"] = Time.local(t.year, t.month, t.day)
       self.class.subobjects.keys.each { |iv|
         val = instance_variable_get("@#{iv}")
         val.send(:set_create_times, t) if val
@@ -930,14 +925,8 @@ module MongoRecord
 
     def set_update_times(t=nil)
       t ||= Time.now
-      self.class.field_names.each { |iv|
-        case iv
-        when :updated_at
-          instance_variable_set("@#{iv}", t)
-        when :updated_on
-          instance_variable_set("@#{iv}", Time.local(t.year, t.month, t.day))
-        end
-      }
+      self["updated_at"] = t
+      self["updated_on"] = Time.local(t.year, t.month, t.day)
       self.class.subobjects.keys.each { |iv|
         val = instance_variable_get("@#{iv}")
         val.send(:set_update_times, t) if val
