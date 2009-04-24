@@ -790,10 +790,10 @@ module MongoRecord
 
     # Save self to the database and set the id.
     def create
-      with_id = self.class.collection.insert(to_mongo_value)
-      @_id = with_id['_id'] || with_id[:_id]
       create_date = self.instance_variable_defined?("@created_at") ? self.created_at : nil
       set_create_times(create_date)
+      with_id = self.class.collection.insert(to_mongo_value)
+      @_id = with_id['_id'] || with_id[:_id]
       self
     end
 
