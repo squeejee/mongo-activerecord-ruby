@@ -287,7 +287,7 @@ module MongoRecord
       # is the same as
       #   Person.find(:all).skip(10).limit(10).sort({:created_on => 1})
       #
-      # Pa
+      
     
       def find(*args)
         
@@ -304,7 +304,25 @@ module MongoRecord
           find_from_ids(args, options)
         end
       end
-  
+      
+      # Yields each record that was found by the find +options+. The find is
+      # performed by find.
+      #
+      # Example:
+      #
+      #   Person.find_each(:conditions => "age > 21") do |person|
+      #     person.party_all_night!
+      #   end
+
+      def find_each(*args)        
+        options = extract_options_from_args!(args)        
+        options.symbolize_keys!
+        find_every(options).each do |record|
+          yield record 
+        end
+        self
+      end
+      
       def all(*args)
         options = extract_options_from_args!(args)
         find_every(options)
