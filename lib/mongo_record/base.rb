@@ -866,7 +866,7 @@ module MongoRecord
     # made with this method doesn't get subjected to validation checks.
     # Hence, attributes can be updated even if the full object isn't valid.
     def update_attribute(name, value)
-      send(name.to_s + '=', value)
+      self[name] = value
       save
     end
 
@@ -875,7 +875,7 @@ module MongoRecord
     # be returned.
     def update_attributes(attributes)
       attributes.each do |name, value|
-        update_attribute(name, value) if self.instance_variables.include?("@#{name}")
+        update_attribute(name, value)
       end
     end
 
