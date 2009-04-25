@@ -39,6 +39,11 @@ class Rubytest < MongoRecord::Base
   end
 end
 
+# Class without any fields defined to test inserting custom attributes
+class Playlist < MongoRecord::Base
+  collection_name :playlists
+end
+
 class MongoTest < Test::Unit::TestCase
 
   @@host = ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost'
@@ -47,6 +52,7 @@ class MongoTest < Test::Unit::TestCase
   @@students = @@db.collection('students')
   @@courses = @@db.collection('courses')
   @@tracks = @@db.collection('tracks')
+  @@playlists = @@db.collection('playlists')
 
   def setup
     super
@@ -55,6 +61,7 @@ class MongoTest < Test::Unit::TestCase
     @@students.clear
     @@courses.clear
     @@tracks.clear
+    @@playlists.clear
 
     # Manually insert data without using MongoRecord::Base
     @@tracks.insert({:_id => XGen::Mongo::Driver::ObjectID.new, :artist => 'Thomas Dolby', :album => 'Aliens Ate My Buick', :song => 'The Ability to Swing'})
@@ -80,6 +87,7 @@ class MongoTest < Test::Unit::TestCase
     @@students.clear
     @@courses.clear
     @@tracks.clear
+    @@playlists.clear
     super
   end
 
@@ -156,7 +164,7 @@ class MongoTest < Test::Unit::TestCase
   def test_find_all
     assert_all_songs Track.find(:all).inject('') { |str, t| str + t.to_s }
   end
-
+  
   def test_find_using_hash
     str = Track.find(:all, :conditions => {:album => 'Aliens Ate My Buick'}).inject('') { |str, t| str + t.to_s }
     assert_match(/song: The Ability to Swing/, str)
@@ -629,6 +637,13 @@ class MongoTest < Test::Unit::TestCase
       assert_match /undefined method \`foobar\' for Track:Class/, ex.to_s
     end
   end
+  
+  def test_adding_custom_attributes
+    s = Student.new(:silly_name => 'Yowza!')
+    s.save
+    s = Student.last
+    assert_equal s.silly_name, 'Yowza!'
+  end
 
   def assert_all_songs(str)
     assert_match(/song: The Ability to Swing/, str)
@@ -637,6 +652,77 @@ class MongoTest < Test::Unit::TestCase
     assert_match(/song: Garden Of Earthly Delights/, str)
     assert_match(/song: The Mayor Of Simpleton/, str)
     assert_match(/song: King For A Day/, str)
+  end
+  
+  
+  #################  
+  
+  
+  def test_find_all_alias
+    assert_all_songs Track.all.inject('') { |str, t| str + t.to_s }
+  end  
+  
+  def test_find_first_alias
+    t = Track.first
+    assert t.kind_of?(Track)
+    str = t.to_s
+    assert_match(/artist: [^,]+,/, str, "did not find non-empty artist name")
+  end
+  
+  def test_find_last
+    c = Course.new(:name=>"History")
+    c.save
+    assert_equal Course.last.name, "History"
+  end
+
+  def test_new_and_save_custom_attributes
+    x = Playlist.new(:artist => 'Level 42', :album => 'Standing In The Light', :song => 'Micro-Kid', :track => 1)
+    assert_nil(x.id)
+    x.save
+    x = Playlist.last
+    assert_not_nil(x.id)
+    assert_equal(x.artist, "Level 42")
+    assert_not_nil(x.created_at)
+    assert_not_nil(x.created_on)
+  end
+
+  def test_update_for_custom_attributes
+    p = Playlist.create(:artist => "The Beatles", :song => "Jailhouse Rock")
+    count = Playlist.count
+    p = Playlist.last
+    assert_equal(p.artist, "The Beatles")
+    p.artist = "Elvis"
+    p.save
+    assert_not_nil(p.updated_at)
+    assert_not_nil(p.updated_on)
+    assert_equal(count, Playlist.count)
+  end
+
+  
+  def test_update_attributes
+    opts = {:artist => 'Bon Jovi', :album => 'Slippery When Wet', :song => 'Livin On A Prayer'}
+    track = Track.new
+    track.update_attributes(opts)
+    t = Track.find_by_artist("Bon Jovi")
+    assert_equal(t.album, "Slippery When Wet")
+  end
+  
+  def test_update_attributes_for_custom_attributes
+    opts = {:artist => 'The Outfield', :album => 'Play Deep', :song => 'Your Love', :year => 1986}
+    playlist = Playlist.new
+    playlist.update_attributes(opts)
+    p = Playlist.find_by_artist("The Outfield")
+    assert_equal(p.year, 1986)
+  end
+  
+  def test_custom_id
+    track = Track.new
+    track.id = 123
+    track.artist = "Nickleback"
+    track.song = "Rockstar"
+    track.save
+    p = Track.find(123)
+    assert_equal p.artist, "Nickleback"
   end
 
 end
