@@ -72,6 +72,15 @@ See MongoRecord::LogDevice. When running outside of the cloud (for example,
 during development), all log messages are echoed to $stderr which is normally
 the console.
 
+== Credits
+Jim Mulholland, jim at squeejee dot com
+* Ability to save custom attributes not declared in the model
+* Save and retrieve custom "_id" fields
+* Find_each functionality
+* Find_last based on the created_at field
+* Assigning created_at and updated_at fields even if they are not declared
+* Alias methods for "first", "last" and "all"
+
 == To Do
 
 * DBRefs
