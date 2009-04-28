@@ -119,7 +119,7 @@ module MongoRecord
       # lower_case_with_underscores.
       def collection_name(coll_name)
         @coll_name = coll_name
-        field(:_id, :_ns, :_update)
+        field(:_id, :_ns)
       end
 
       # Creates one or more collection fields. Each field will be saved to
