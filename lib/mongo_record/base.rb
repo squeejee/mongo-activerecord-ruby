@@ -287,10 +287,10 @@ module MongoRecord
       # is the same as
       #   Person.find(:all).skip(10).limit(10).sort({:created_on => 1})
       #
-      
-    
-      def find(*args)        
-        options = extract_options_from_args!(args)        
+
+
+      def find(*args)
+        options = extract_options_from_args!(args)
         options.symbolize_keys!
         case args.first
         when :first
@@ -303,7 +303,7 @@ module MongoRecord
           find_from_ids(args, options)
         end
       end
-      
+
       # Yields each record that was found by the find +options+. The find is
       # performed by find.
       #
@@ -313,20 +313,20 @@ module MongoRecord
       #     person.party_all_night!
       #   end
 
-      def find_each(*args)        
-        options = extract_options_from_args!(args)        
+      def find_each(*args)
+        options = extract_options_from_args!(args)
         options.symbolize_keys!
         find_every(options).each do |record|
-          yield record 
+          yield record
         end
         self
       end
-      
+
       def all(*args)
         options = extract_options_from_args!(args)
         find_every(options)
       end
-          
+
       def first(*args)
 #        args = ([:first]<<args).flatten
         options = extract_options_from_args!(args)
@@ -362,10 +362,10 @@ module MongoRecord
       end
 
       def sum(column)
-        x = self.find(:all, :select=>column)   
+        x = self.find(:all, :select=>column)
         x.map {|p1| p1.followers_count}.compact.sum
       end
-      
+
       # Deletes the record with the given id from the collection.
       def delete(id)
         collection.remove({:_id => id})
@@ -465,7 +465,7 @@ module MongoRecord
       #   row = collection.find_first(criteria, :fields => fields)
       #   (row.nil? || row['_id'] == nil) ? nil : self.new(row)
       # end
-      
+
       def find_initial(options)
         options[:limit] = 1
         options[:order] = 'created_at asc'
@@ -483,7 +483,7 @@ module MongoRecord
       def find_every(options)
         options.symbolize_keys!
         criteria = criteria_from(options[:conditions], options[:criteria]).merge!(where_func(options[:where]))
-                
+
         find_options = {}
         find_options[:fields] = fields_from(options[:select]) if options[:select]
         find_options[:limit] = options[:limit].to_i if options[:limit]
@@ -528,10 +528,10 @@ module MongoRecord
 
       def ids_clause(ids)
         #ids.length == 1 ? ids[0].to_oid : {'$in' => ids.collect{|id| id.to_oid}}
-        
-        if ids.length == 1 
+
+        if ids.length == 1
           ids[0].is_a?(String) ? ids[0].to_oid : ids[0]
-        else 
+        else
           {'$in' => ids.collect{|id| id.is_a?(String) ? id.to_oid : id}}
         end
       end
@@ -577,7 +577,7 @@ module MongoRecord
           opts = criteria_from_hash(condition)
         else
           opts = {}
-        end        
+        end
         opts ||= {}
         criteria ||= {}
         opts.merge!(criteria)
@@ -771,7 +771,7 @@ module MongoRecord
 
     # Save self and returns true if the save was successful, false if not.
     def save
-      create_or_update      
+      create_or_update
     end
 
     # Save self and returns true if the save was successful and raises
@@ -817,7 +817,7 @@ module MongoRecord
       if self.class.collection.db.error?
         return false
       end
-      self      
+      self
     end
 
     # Remove self from the database and set @_id to nil. If self has no
@@ -839,12 +839,12 @@ module MongoRecord
     def [](attr_name)
       self.send(attr_name)
     end
-    
+
     def []=(attr_name, value)
       self.class.field(attr_name)
       self.send(attr_name.to_s + '=', value)
     end
-    
+
     def method_missing(sym, *args)
       if self.instance_variables.include?("@#{sym}")
         self.class.field(sym)
@@ -853,7 +853,7 @@ module MongoRecord
         super
       end
     end
-   
+
     #--
     # ================================================================
     # These methods exist so we can plug in ActiveRecord validation, etc.
