@@ -584,6 +584,27 @@ class MongoTest < Test::Unit::TestCase
     assert_not_nil s
     assert_equal 1, s.scores.length
     assert_equal 'changed', s.scores.first.for_course.name
+
+
+    # Now try with has_many
+    score.save
+    s.scores = [score]
+    s.save
+
+    assert_equal 3.5, s.scores.first.grade
+
+    s = Student.find(:first, :conditions => "name = 'Spongebob Squarepants'")
+    assert_not_nil s
+    assert_equal 1, s.scores.length
+    assert_equal 3.5, s.scores.first.grade
+
+    score.grade = 4.0
+    score.save
+
+    s = Student.find(:first, :conditions => "name = 'Spongebob Squarepants'")
+    assert_not_nil s
+    assert_equal 1, s.scores.length
+    assert_equal 4.0, s.scores.first.grade
   end
 
   def test_subobjects_have_no_ids

@@ -794,6 +794,14 @@ module MongoRecord
         value = instance_variable_get("@#{key}").to_mongo_value
         if value.instance_of? Hash and value["_ns"]
           value = XGen::Mongo::Driver::DBRef.new(value["_ns"], value["_id"])
+        elsif value.instance_of? Array
+          value = value.map {|v|
+            if v.instance_of? Hash and v["_ns"]
+              XGen::Mongo::Driver::DBRef.new(v["_ns"], v["_id"])
+            else
+              v
+            end
+          }
         end
         h[key] = value
       }
@@ -921,7 +929,12 @@ module MongoRecord
       elsif self.class.arrays.keys.include?(sym)
         klazz = self.class.arrays[sym]
         val = [val] unless val.kind_of?(Array)
-        instance_variable_set(ivar_name, val.collect {|v| v.kind_of?(MongoRecord::Base) ? v : klazz.new(v)})
+        instance_variable_set(ivar_name, val.collect {|v|
+                                if v.instance_of? XGen::Mongo::Driver::DBRef
+                                  v = self.class.collection.db.dereference(v)
+                                end
+                                v.kind_of?(MongoRecord::Base) ? v : klazz.new(v)
+                              })
       else
         instance_variable_set(ivar_name, val)
       end
