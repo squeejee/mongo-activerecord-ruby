@@ -164,7 +164,7 @@ class MongoTest < Test::Unit::TestCase
   def test_find_all
     assert_all_songs Track.find(:all).inject('') { |str, t| str + t.to_s }
   end
-  
+
   def test_find_using_hash
     str = Track.find(:all, :conditions => {:album => 'Aliens Ate My Buick'}).inject('') { |str, t| str + t.to_s }
     assert_match(/song: The Ability to Swing/, str)
@@ -637,7 +637,7 @@ class MongoTest < Test::Unit::TestCase
       assert_match /undefined method \`foobar\' for Track:Class/, ex.to_s
     end
   end
-  
+
   def test_adding_custom_attributes
     s = Student.new(:silly_name => 'Yowza!')
     s.save
@@ -653,22 +653,22 @@ class MongoTest < Test::Unit::TestCase
     assert_match(/song: The Mayor Of Simpleton/, str)
     assert_match(/song: King For A Day/, str)
   end
-  
-  
-  #################  
-  
-  
+
+
+  #################
+
+
   def test_find_all_alias
     assert_all_songs Track.all.inject('') { |str, t| str + t.to_s }
-  end  
-  
+  end
+
   def test_find_first_alias
     t = Track.first
     assert t.kind_of?(Track)
     str = t.to_s
     assert_match(/artist: [^,]+,/, str, "did not find non-empty artist name")
   end
-  
+
   def test_find_last
     c = Course.new(:name=>"History")
     c.save
@@ -698,7 +698,7 @@ class MongoTest < Test::Unit::TestCase
     assert_equal(count, Playlist.count)
   end
 
-  
+
   def test_update_attributes
     opts = {:artist => 'Bon Jovi', :album => 'Slippery When Wet', :song => 'Livin On A Prayer'}
     track = Track.new
@@ -706,7 +706,7 @@ class MongoTest < Test::Unit::TestCase
     t = Track.find_by_artist("Bon Jovi")
     assert_equal(t.album, "Slippery When Wet")
   end
-  
+
   def test_update_attributes_for_custom_attributes
     opts = {:artist => 'The Outfield', :album => 'Play Deep', :song => 'Your Love', :year => 1986}
     playlist = Playlist.new
@@ -714,7 +714,7 @@ class MongoTest < Test::Unit::TestCase
     p = Playlist.find_by_artist("The Outfield")
     assert_equal(p.year, 1986)
   end
-  
+
   def test_custom_id
     track = Track.new
     track.id = 123
