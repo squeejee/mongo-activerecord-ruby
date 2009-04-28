@@ -789,13 +789,7 @@ module MongoRecord
     # database.
     def to_mongo_value
       h = {}
-#      self.class.mongo_ivar_names.each {|iv| h[iv] = instance_variable_get("@#{iv}").to_mongo_value }
-      mongo_values = self.instance_values
-      # If the "_id" value is not set but an "id" value is, set "_id" equal to "id"
-      if mongo_values["_id"].nil? && !mongo_values["id"].nil?
-        mongo_values["_id"] = mongo_values["id"]
-      end
-      key_names = mongo_values.keys + self.class.subobjects.keys + self.class.arrays.keys
+      key_names = self.instance_values.keys + self.class.subobjects.keys + self.class.arrays.keys
       key_names.each {|key| h[key] = instance_variable_get("@#{key}").to_mongo_value }
       h
     end
