@@ -790,7 +790,13 @@ module MongoRecord
     def to_mongo_value
       h = {}
       key_names = self.instance_values.keys
-      key_names.each {|key| h[key] = instance_variable_get("@#{key}").to_mongo_value }
+      key_names.each {|key|
+        value = instance_variable_get("@#{key}").to_mongo_value
+        if value.instance_of? Hash and value["_ns"]
+          value = XGen::Mongo::Driver::DBRef.new(value["_ns"], value["_id"])
+        end
+        h[key] = value
+      }
       h
     end
 
@@ -798,6 +804,7 @@ module MongoRecord
     def create
       create_date = self.instance_variable_defined?("@created_at") ? self.created_at : nil
       set_create_times(create_date)
+      @_ns = self.class.collection.name
       with_id = self.class.collection.insert(to_mongo_value)
       @_id = with_id['_id'] || with_id[:_id]
       with_id
@@ -907,6 +914,9 @@ module MongoRecord
     def init_ivar(ivar_name, val)
       sym = ivar_name[1..-1].to_sym
       if self.class.subobjects.keys.include?(sym)
+        if val.instance_of? XGen::Mongo::Driver::DBRef
+          val = self.class.collection.db.dereference(val)
+        end
         instance_variable_set(ivar_name, self.class.subobjects[sym].new(val))
       elsif self.class.arrays.keys.include?(sym)
         klazz = self.class.arrays[sym]

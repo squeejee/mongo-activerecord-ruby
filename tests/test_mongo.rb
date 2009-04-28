@@ -558,34 +558,33 @@ class MongoTest < Test::Unit::TestCase
     assert_equal s.created_on, s.updated_on
   end
 
-# # TODO dbrefs are not yet implemented
-#   # This reproduces a bug where DBRefs weren't being created properly because
-#   # the MongoRecord::Base objects weren't storing the magic _ns, _update, and
-#   # other values set by the database.
-#   def test_db_ref
-#     s = Student.new(:name => 'Spongebob Squarepants', :address => @spongebob_addr)
-#     s.save
+  # This reproduces a bug where DBRefs weren't being created properly because
+  # the MongoRecord::Base objects weren't storing _ns
+  def test_db_ref
+    s = Student.new(:name => 'Spongebob Squarepants', :address => @spongebob_addr)
+    s.save
 
-#     @course1.save
-#     assert_not_nil @course1.id
+    @course1.save
+    assert_not_nil @course1.id
+    assert_not_nil @course1["_ns"]
 
-#     s.add_score(@course1.id, 3.5)
-#     s.save                      # This used to blow up
+    s.add_score(@course1.id, 3.5)
+    s.save
 
-#     score = s.scores.first
-#     assert_not_nil score
-#     assert_equal @course1.name, score.for_course.name
+    score = s.scores.first
+    assert_not_nil score
+    assert_equal @course1.name, score.for_course.name
 
-#     # Now change the name of @course1 and see the student's score's course
-#     # name change.
-#     @course1.name = 'changed'
-#     @course1.save
+    # Now change the name of @course1 and see the student's score's course
+    # name change.
+    @course1.name = 'changed'
+    @course1.save
 
-#     s = Student.find(:first, :conditions => "name = 'Spongebob Squarepants'")
-#     assert_not_nil s
-#     assert_equal 1, s.scores.length
-#     assert_equal 'changed', s.scores.first.for_course.name
-#   end
+    s = Student.find(:first, :conditions => "name = 'Spongebob Squarepants'")
+    assert_not_nil s
+    assert_equal 1, s.scores.length
+    assert_equal 'changed', s.scores.first.for_course.name
+  end
 
   def test_subobjects_have_no_ids
     @spongebob_addr.id
