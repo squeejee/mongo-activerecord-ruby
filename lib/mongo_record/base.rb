@@ -789,7 +789,7 @@ module MongoRecord
     # database.
     def to_mongo_value
       h = {}
-      key_names = self.instance_values.keys + self.class.subobjects.keys + self.class.arrays.keys
+      key_names = self.instance_values.keys
       key_names.each {|key| h[key] = instance_variable_get("@#{key}").to_mongo_value }
       h
     end
