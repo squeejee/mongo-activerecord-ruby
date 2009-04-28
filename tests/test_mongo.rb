@@ -271,11 +271,9 @@ class MongoTest < Test::Unit::TestCase
     assert_equal "Budapest by Blimp:Europa and the Pirate Twins:Garden Of Earthly Delights:King For A Day:The Ability to Swing:The Mayor Of Simpleton",
                  tracks.collect {|t| t.song }.join(':')
 
-    # TODO this should work, but the database does not yet sort this properly
-#     tracks = Track.find(:all, :order => "artist desc, song")
-#     assert_not_nil tracks
-#     assert_equal "Garden Of Earthly Delights:King For A Day:The Mayor Of Simpleton:Budapest by Blimp:Europa and the Pirate Twins:The Ability to Swing",
-#                  tracks.collect {|t| t.song }.join(':')
+    tracks = Track.find(:all, :order => "artist desc, song")
+    assert_not_nil tracks
+    assert_equal "Garden Of Earthly Delights:King For A Day:The Mayor Of Simpleton:Budapest by Blimp:Europa and the Pirate Twins:The Ability to Swing", tracks.collect {|t| t.song }.join(':')
   end
 
   def test_delete
