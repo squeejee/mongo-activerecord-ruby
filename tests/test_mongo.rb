@@ -742,5 +742,11 @@ class MongoTest < Test::Unit::TestCase
     p = Track.find(123)
     assert_equal p.artist, "Nickleback"
   end
+  
+  def test_sum
+    Course.create(:name=>"Math", :student_count=>10)
+    Course.create(:name=>"Science", :student_count=>20)
+    assert_equal Course.sum("student_count"), 30
+  end
 
 end

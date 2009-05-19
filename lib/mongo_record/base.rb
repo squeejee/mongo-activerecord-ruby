@@ -363,7 +363,7 @@ module MongoRecord
 
       def sum(column)
         x = self.find(:all, :select=>column)
-        x.map {|p1| p1.followers_count}.compact.sum
+        x.map {|p1| p1[column.to_sym]}.compact.inject(0) { |s,v| s += v }
       end
 
       # Deletes the record with the given id from the collection.
